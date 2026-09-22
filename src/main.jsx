@@ -1,224 +1,28 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
-import "./styles.css";
-
-const books = [
-  ["Genesis",50],["Exodus",40],["Leviticus",27],["Numbers",36],["Deuteronomy",34],
-  ["Joshua",24],["Judges",21],["Ruth",4],["1 Samuel",31],["2 Samuel",24],
-  ["1 Kings",22],["2 Kings",25],["1 Chronicles",29],["2 Chronicles",36],["Ezra",10],
-  ["Nehemiah",13],["Esther",10],["Job",42],["Psalms",150],["Proverbs",31],
-  ["Ecclesiastes",12],["Song of Solomon",8],["Isaiah",66],["Jeremiah",52],
-  ["Lamentations",5],["Ezekiel",48],["Daniel",12],["Hosea",14],["Joel",3],
-  ["Amos",9],["Obadiah",1],["Jonah",4],["Micah",7],["Nahum",3],["Habakkuk",3],
-  ["Zephaniah",3],["Haggai",2],["Zechariah",14],["Malachi",4],["Matthew",28],
-  ["Mark",16],["Luke",24],["John",21],["Acts",28],["Romans",16],
-  ["1 Corinthians",16],["2 Corinthians",13],["Galatians",6],["Ephesians",6],
-  ["Philippians",4],["Colossians",4],["1 Thessalonians",5],["2 Thessalonians",3],
-  ["1 Timothy",6],["2 Timothy",4],["Titus",3],["Philemon",1],["Hebrews",13],
-  ["James",5],["1 Peter",5],["2 Peter",3],["1 John",5],["2 John",1],["3 John",1],
-  ["Jude",1],["Revelation",22]
-];
-
-const topics = [
-  "Faith","Prayer","Forgiveness","Purity","Love","Marriage","Family","Wisdom",
-  "Fear","Hope","Healing","God's Character","Holy Spirit","Jesus","Salvation",
-  "Sin","Repentance","Obedience","Purpose","Calling","Work","Money","Leadership",
-  "Friendship","Discipline","Temptation","Trials","Suffering","Peace","Joy",
-  "Gratitude","Worship","Fasting","Waiting on God","Courage","Identity",
-  "Spiritual Growth"
-];
-
-const demoVerses = {
-  "Genesis 1:1": "In the beginning, God created the heavens and the earth.",
-  "John 3:16": "For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.",
-  "Philippians 4:13": "I can do all things through Christ, who strengthens me."
-};
-
-function load(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
-}
-
-function App() {
-  const [screen, setScreen] = useState("home");
-  const [day, setDay] = useState(load("bj-current-day", 1));
-  const [completed, setCompleted] = useState(load("bj-completed", []));
-  const [notes, setNotes] = useState(load("bj-notes", {}));
-  const [book, setBook] = useState("Genesis");
-  const [chapter, setChapter] = useState(1);
-  const [search, setSearch] = useState("");
-  const [jump, setJump] = useState("");
-  const [topic, setTopic] = useState(null);
-
-  useEffect(() => localStorage.setItem("bj-current-day", JSON.stringify(day)), [day]);
-  useEffect(() => localStorage.setItem("bj-completed", JSON.stringify(completed)), [completed]);
-  useEffect(() => localStorage.setItem("bj-notes", JSON.stringify(notes)), [notes]);
-
-  const progress = Math.round((completed.length / 365) * 100);
-  const selectedBook = books.find(b => b[0] === book);
-
-  function goDay(n) {
-    const value = Math.min(365, Math.max(1, Number(n) || 1));
-    setDay(value);
-    setScreen("journey");
-  }
-
-  function toggleComplete() {
-    setCompleted(prev => prev.includes(day) ? prev.filter(x => x !== day) : [...prev, day]);
-  }
-
-  function saveNote(value) {
-    setNotes(prev => ({...prev, [`day-${day}`]: value}));
-  }
-
-  return (
-    <div className="app">
-      <header className="topbar">
-        <button className="brand" onClick={() => setScreen("home")}>
-          <span className="brand-mark">✦</span>
-          <span><b>BIBLE</b><em>JOURNAL</em></span>
-        </button>
-        <div className="top-actions">
-          <button className="ghost" onClick={() => setScreen("bible")}>Bible</button>
-          <button className="ghost" onClick={() => setScreen("topics")}>Topics</button>
-          <button className="search-button" onClick={() => setScreen("search")}>⌕ Search</button>
-        </div>
-      </header>
-
-      <main>
-        {screen === "home" && (
-          <section className="hero-page">
-            <div className="hero-copy">
-              <p className="eyebrow">READ · REFLECT · PRAY · GROW</p>
-              <h1>Your Bible.<br/><i>Your journal.</i></h1>
-              <p className="lead">A peaceful place to read Scripture, follow your year-long journey, and keep what God is teaching you.</p>
-              <div className="home-actions">
-                <button className="primary" onClick={() => setScreen("journey")}>Continue Day {day} →</button>
-                <button className="secondary" onClick={() => setScreen("bible")}>Open Bible</button>
-              </div>
-            </div>
-            <div className="dashboard-card">
-              <div className="card-label">365-DAY JOURNEY</div>
-              <div className="day-big">Day {day}</div>
-              <div className="progress-track"><span style={{width: progress + "%"}} /></div>
-              <div className="progress-meta"><span>{completed.length} days complete</span><span>{progress}%</span></div>
-              <div className="quick-jump">
-                <label>QUICK JUMP</label>
-                <div className="jump-row">
-                  <select defaultValue="1-50" onChange={() => {}}>
-                    <option>1–50</option><option>51–100</option><option>101–150</option><option>151–200</option>
-                    <option>201–250</option><option>251–300</option><option>301–350</option><option>351–365</option>
-                  </select>
-                  <input value={jump} onChange={e => setJump(e.target.value)} placeholder="Day number" inputMode="numeric"/>
-                  <button onClick={() => goDay(jump)}>GO</button>
-                </div>
-                <div className="jump-grid">
-                  {[1,2,3,4,5,6,7,8,9,10].map(n => <button key={n} onClick={() => goDay(n)}>Day {n}</button>)}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {screen === "journey" && (
-          <section className="content-page">
-            <div className="section-head">
-              <div><p className="eyebrow">365-DAY JOURNEY</p><h2>Day {day}</h2></div>
-              <button className={completed.includes(day) ? "complete done" : "complete"} onClick={toggleComplete}>
-                {completed.includes(day) ? "✓ Completed" : "Mark as complete"}
-              </button>
-            </div>
-            <article className="journal-card">
-              <p className="eyebrow">TODAY'S READING</p>
-              <h3>{day === 1 ? "In the Beginning: God Made It All" : `Bible Journey — Day ${day}`}</h3>
-              <div className="reading-meta">
-                <span>CORE READING</span><b>{day === 1 ? "Genesis 1:1–31" : "Reading plan data will populate here"}</b>
-              </div>
-              <div className="reading-meta"><span>STUDY METHOD</span><b>{day === 1 ? "A.P.P.L.E." : "Daily Study"}</b></div>
-              <div className="scripture-box">
-                <div className="box-title">TODAY'S SCRIPTURE — WEB</div>
-                <p>{day === 1 ? "In the beginning, God created the heavens and the earth." : "The complete World English Bible reading for this day will be loaded from the project's structured Bible data."}</p>
-              </div>
-              <div className="reflection">
-                <label>WHAT GOD IS HELPING ME UNDERSTAND</label>
-                <textarea value={notes[`day-${day}`] || ""} onChange={e => saveNote(e.target.value)} placeholder="Write what you are learning, noticing, or receiving from today's reading..." />
-              </div>
-              <div className="reflection-grid">
-                <div><label>KEY POINT TO REMEMBER</label><textarea /></div>
-                <div><label>MY PRAYER</label><textarea /></div>
-              </div>
-            </article>
-          </section>
-        )}
-
-        {screen === "bible" && (
-          <section className="content-page">
-            <div className="section-head">
-              <div><p className="eyebrow">FULL BIBLE LIBRARY · WEB</p><h2>{book} {chapter}</h2></div>
-              <button className="secondary" onClick={() => setScreen("home")}>⌂ Home</button>
-            </div>
-            <div className="bible-layout">
-              <aside className="book-list">
-                <h4>BOOKS</h4>
-                {books.map(([name]) => <button className={name === book ? "book active" : "book"} key={name} onClick={() => {setBook(name);setChapter(1)}}>{name}</button>)}
-              </aside>
-              <article className="bible-reader">
-                <div className="chapter-nav">
-                  <select value={chapter} onChange={e => setChapter(Number(e.target.value))}>
-                    {Array.from({length:selectedBook[1]},(_,i)=><option key={i+1} value={i+1}>Chapter {i+1}</option>)}
-                  </select>
-                </div>
-                <h3>{book} {chapter}</h3>
-                <p className="placeholder-text">
-                  {demoVerses[`${book} ${chapter}`] || "The structured WEB verse data will appear here. Each chapter is designed to be loaded independently so the Bible remains fast, searchable, and fully usable offline."}
-                </p>
-                <div className="reader-actions">
-                  <button onClick={() => setScreen("journal")}>✎ Journal about this chapter</button>
-                  <button onClick={() => setScreen("home")}>⌂ Home</button>
-                </div>
-              </article>
-            </div>
-          </section>
-        )}
-
-        {screen === "topics" && (
-          <section className="content-page">
-            <div className="section-head"><div><p className="eyebrow">STUDY BY SUBJECT</p><h2>Topics</h2></div></div>
-            {!topic ? <div className="topic-grid">{topics.map(t => <button key={t} onClick={() => setTopic(t)}>{t}<span>→</span></button>)}</div> :
-              <article className="journal-card topic-page"><button className="back" onClick={() => setTopic(null)}>← All topics</button><p className="eyebrow">TOPIC</p><h3>{topic}</h3><p>Relevant WEB Scripture references will be connected to this topic in the full data import.</p><button className="primary" onClick={() => setScreen("bible")}>Open Bible →</button></article>}
-          </section>
-        )}
-
-        {screen === "journal" && (
-          <section className="content-page">
-            <div className="section-head"><div><p className="eyebrow">YOUR WRITING SPACE</p><h2>Journal</h2></div></div>
-            <article className="journal-card"><label>FREE JOURNAL</label><textarea className="big-note" placeholder="Write freely here..." /></article>
-          </section>
-        )}
-
-        {screen === "search" && (
-          <section className="content-page">
-            <div className="section-head"><div><p className="eyebrow">SEARCH SCRIPTURE</p><h2>Find a verse</h2></div></div>
-            <div className="search-box"><input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search a word, phrase, or reference..." /></div>
-            <div className="results">
-              {Object.entries(demoVerses).filter(([ref,text]) => !search || ref.toLowerCase().includes(search.toLowerCase()) || text.toLowerCase().includes(search.toLowerCase())).map(([ref,text]) =>
-                <button key={ref} onClick={() => { const [b,c] = ref.split(" "); setBook(b); setChapter(Number(c.split(":")[0])); setScreen("bible"); }}>
-                  <b>{ref}</b><span>{text}</span>
-                </button>
-              )}
-            </div>
-          </section>
-        )}
-      </main>
-
-      <nav className="bottom-nav">
-        <button onClick={() => setScreen("home")}>⌂<span>Home</span></button>
-        <button onClick={() => setScreen("bible")}>▤<span>Bible</span></button>
-        <button onClick={() => setScreen("journey")}>◷<span>Journey</span></button>
-        <button onClick={() => setScreen("topics")}>✦<span>Topics</span></button>
-        <button onClick={() => setScreen("journal")}>✎<span>Journal</span></button>
-      </nav>
-    </div>
-  );
-}
-
-createRoot(document.getElementById("root")).render(<App />);
+import React,{useEffect,useMemo,useState}from'react';import{createRoot}from'react-dom/client';import'./styles.css';
+const BOOKS=[['Genesis',50,'genesis'],['Exodus',40,'exodus'],['Leviticus',27,'leviticus'],['Numbers',36,'numbers'],['Deuteronomy',34,'deuteronomy'],['Joshua',24,'joshua'],['Judges',21,'judges'],['Ruth',4,'ruth'],['1 Samuel',31,'1samuel'],['2 Samuel',24,'2samuel'],['1 Kings',22,'1kings'],['2 Kings',25,'2kings'],['1 Chronicles',29,'1chronicles'],['2 Chronicles',36,'2chronicles'],['Ezra',10,'ezra'],['Nehemiah',13,'nehemiah'],['Esther',10,'esther'],['Job',42,'job'],['Psalms',150,'psalms'],['Proverbs',31,'proverbs'],['Ecclesiastes',12,'ecclesiastes'],['Song of Solomon',8,'songofsolomon'],['Isaiah',66,'isaiah'],['Jeremiah',52,'jeremiah'],['Lamentations',5,'lamentations'],['Ezekiel',48,'ezekiel'],['Daniel',12,'daniel'],['Hosea',14,'hosea'],['Joel',3,'joel'],['Amos',9,'amos'],['Obadiah',1,'obadiah'],['Jonah',4,'jonah'],['Micah',7,'micah'],['Nahum',3,'nahum'],['Habakkuk',3,'habakkuk'],['Zephaniah',3,'zephaniah'],['Haggai',2,'haggai'],['Zechariah',14,'zechariah'],['Malachi',4,'malachi'],['Matthew',28,'matthew'],['Mark',16,'mark'],['Luke',24,'luke'],['John',21,'john'],['Acts',28,'acts'],['Romans',16,'romans'],['1 Corinthians',16,'1corinthians'],['2 Corinthians',13,'2corinthians'],['Galatians',6,'galatians'],['Ephesians',6,'ephesians'],['Philippians',4,'philippians'],['Colossians',4,'colossians'],['1 Thessalonians',5,'1thessalonians'],['2 Thessalonians',3,'2thessalonians'],['1 Timothy',6,'1timothy'],['2 Timothy',4,'2timothy'],['Titus',3,'titus'],['Philemon',1,'philemon'],['Hebrews',13,'hebrews'],['James',5,'james'],['1 Peter',5,'1peter'],['2 Peter',3,'2peter'],['1 John',5,'1john'],['2 John',1,'2john'],['3 John',1,'3john'],['Jude',1,'jude'],['Revelation',22,'revelation']];
+const TOPICS=['Faith','Prayer','Forgiveness','Purity','Love','Marriage','Family','Wisdom','Fear','Hope','Healing',"God's Character",'Holy Spirit','Jesus','Salvation','Sin','Repentance','Obedience','Purpose','Calling','Work','Money','Leadership','Friendship','Discipline','Temptation','Trials','Suffering','Peace','Joy','Gratitude','Worship','Fasting','Waiting on God','Courage','Identity','Spiritual Growth'];
+const RANGES=[[1,50],[51,100],[101,150],[151,200],[201,250],[251,300],[301,350],[351,365]];
+const KEY='bj-';const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(KEY+k))??d}catch{return d}};const put=(k,v)=>localStorage.setItem(KEY+k,JSON.stringify(v));const slug=n=>BOOKS.find(b=>b[0]===n)?.[2];
+const refs=s=>s.split(/;\s*/).map(x=>{let m=x.match(/^(.+?)\s+(\d+):(\d+)(?:[–-](\d+))?$/);return m?{book:m[1],chapter:+m[2],start:+m[3],end:+(m[4]||m[3])}:null}).filter(Boolean);
+function App(){const[screen,setScreen]=useState('home'),[day,setDay]=useState(get('day',1)),[plan,setPlan]=useState([]),[loaded,setLoaded]=useState({}),[book,setBook]=useState(get('book','Genesis')),[chapter,setChapter]=useState(get('chapter',1)),[done,setDone]=useState(get('done',[])),[daily,setDaily]=useState(get('daily',{})),[notes,setNotes]=useState(get('notes',{})),[prayers,setPrayers]=useState(get('prayers',[])),[saved,setSaved]=useState(get('saved',[])),[marks,setMarks]=useState(get('marks',{})),[q,setQ]=useState(''),[results,setResults]=useState([]),[topic,setTopic]=useState(null),[topicResults,setTopicResults]=useState([]),[loading,setLoading]=useState(false);
+useEffect(()=>{put('day',day)},[day]);useEffect(()=>{put('book',book);put('chapter',chapter)},[book,chapter]);useEffect(()=>put('done',done),[done]);useEffect(()=>put('daily',daily),[daily]);useEffect(()=>put('notes',notes),[notes]);useEffect(()=>put('prayers',prayers),[prayers]);useEffect(()=>put('saved',saved),[saved]);useEffect(()=>put('marks',marks),[marks]);useEffect(()=>{fetch(import.meta.env.BASE_URL+'data/reading-plan.json').then(r=>r.json()).then(x=>setPlan(x.days||[]))},[]);
+const load=async n=>{if(loaded[slug(n)])return loaded[slug(n)];setLoading(true);try{let r=await fetch(import.meta.env.BASE_URL+'data/web/'+slug(n)+'.json');let d=await r.json();setLoaded(x=>({...x,[slug(n)]:d}));return d}catch{return null}finally{setLoading(false)}};useEffect(()=>{load(book)},[book]);
+const open=(b,c=1)=>{setBook(b);setChapter(c);setScreen('bible')};const journey=plan[day-1];const complete=()=>setDone(x=>x.includes(day)?x.filter(n=>n!==day):[...x,day].sort((a,b)=>a-b));const saveDaily=(f,v)=>setDaily(x=>({...x,[day]:{...(x[day]||{}),[f]:v}}));const saveNote=(f,v)=>setNotes(x=>({...x,[book+' '+chapter]:{...(x[book+' '+chapter]||{}),[f]:v}}));const data=loaded[slug(book)],verses=data?.chapters?.[chapter]||[];
+async function search(){if(!q.trim())return;setLoading(true);let out=[];let exact=q.match(/^(.+?)\s+(\d+):(\d+)$/);if(exact){let d=await load(exact[1]);out=(d?.chapters?.[exact[2]]||[]).filter(v=>v.v===+exact[3]).map(v=>({ref:exact[1]+' '+exact[2]+':'+v.v,text:v.text,book:exact[1],chapter:+exact[2]}))}else for(const b of BOOKS){let d=await load(b[0]);for(const[c,vs]of Object.entries(d?.chapters||{}))for(const v of vs)if(v.text.toLowerCase().includes(q.toLowerCase())){out.push({ref:b[0]+' '+c+':'+v.v,text:v.text,book:b[0],chapter:+c});if(out.length>=60)break}if(out.length>=60)break}setResults(out);setLoading(false);setScreen('search')}
+async function showTopic(t){setTopic(t);setLoading(true);let terms=t.toLowerCase().split(/\s+/);let out=[];for(const b of BOOKS){let d=await load(b[0]);for(const[c,vs]of Object.entries(d?.chapters||{}))for(const v of vs)if(terms.some(w=>w.length>3&&v.text.toLowerCase().includes(w))){out.push({ref:b[0]+' '+c+':'+v.v,text:v.text,book:b[0],chapter:+c});if(out.length>=40)break}if(out.length>=40)break}setTopicResults(out);setLoading(false)}
+return <div className="app"><header className="topbar"><button className="brand" onClick={()=>setScreen('home')}><span className="brand-mark">✦</span><span><b>BIBLE</b><em>JOURNAL</em></span></button><div className="top-actions"><button className="ghost" onClick={()=>setScreen('bible')}>Bible</button><button className="ghost" onClick={()=>setScreen('journey')}>Journey</button><button className="search-button" onClick={()=>setScreen('search')}>⌕ Search</button></div></header><main>
+{screen==='home'&&<Home day={day}done={done.length}setScreen={setScreen}setDay={setDay}/>}
+{screen==='journey'&&journey&&<Journey j={journey} day={day}done={done}complete={complete}notes={daily[day]||{}}save={saveDaily}load={load}open={open}/>}
+{screen==='bible'&&<Bible book={book}chapter={chapter}setBook={setBook}setChapter={setChapter}data={data}verses={verses}books={BOOKS}open={open}saved={saved}setSaved={setSaved}marks={marks}setMarks={setMarks}notes={notes[book+' '+chapter]||{}}saveNote={saveNote}setScreen={setScreen}loading={loading}/>}
+{screen==='topics'&&<Topics topic={topic}results={topicResults}show={showTopic}open={open}setTopic={setTopic}loading={loading}/>}
+{screen==='journal'&&<Journal prayers={prayers}setPrayers={setPrayers}/>}
+{screen==='search'&&<Search q={q}setQ={setQ}search={search}results={results}open={open}loading={loading}/>}
+</main><nav className="bottom-nav"><button onClick={()=>setScreen('home')}>⌂<span>Home</span></button><button onClick={()=>setScreen('bible')}>▤<span>Bible</span></button><button onClick={()=>setScreen('journey')}>◷<span>Journey</span></button><button onClick={()=>setScreen('topics')}>✦<span>Topics</span></button><button onClick={()=>setScreen('journal')}>✎<span>Journal</span></button></nav></div>}
+const Home=({day,done,setScreen,setDay})=><section className="hero-page"><div className="hero-copy"><p className="eyebrow">READ · REFLECT · PRAY · GROW</p><h1>Your Bible.<br/><i>Your journal.</i></h1><p className="lead">A peaceful, modern Bible study space with the complete World English Bible and a structured 365-day journey.</p><div className="home-actions"><button className="primary" onClick={()=>setScreen('journey')}>Continue Day {day} →</button><button className="secondary" onClick={()=>setScreen('bible')}>Open Bible</button></div></div><div className="dashboard-card"><div className="card-label">365-DAY JOURNEY</div><div className="day-big">Day {day}</div><div className="progress-track"><span style={{width:(done/365*100)+'%'}}/></div><div className="progress-meta"><span>{done} days complete</span><span>{Math.round(done/365*100)}%</span></div><div className="quick-jump"><label>JUMP TO DAY</label><div className="range-row">{RANGES.map(r=><button key={r[0]} onClick={()=>setDay(r[0])}>Days {r[0]}–{r[1]}</button>)}</div><div className="jump-row">{RANGES.map(r=><button key={r[0]} onClick={()=>setDay(r[0])}>Day {r[0]}</button>)}</div></div><div className="home-cards"><button onClick={()=>setScreen('topics')}>Study by topic <b>→</b></button><button onClick={()=>setScreen('journal')}>Prayer journal <b>→</b></button></div></div></section>;
+function Journey({j,day,done,complete,notes,save,load,open}){const[blocks,setBlocks]=useState([]);useEffect(()=>{(async()=>{let a=[];for(const r of refs(j.coreReading)){let d=await load(r.book);a.push({...r,verses:(d?.chapters?.[r.chapter]||[]).filter(v=>v.v>=r.start&&v.v<=r.end)})}setBlocks(a)})()},[day,j.coreReading]);return <section className="content-page"><div className="section-head"><div><p className="eyebrow">365-DAY JOURNEY</p><h2>Day {day}</h2><p className="muted">{j.title}</p></div><button className={done.includes(day)?'complete done':'complete'} onClick={complete}>{done.includes(day)?'✓ Completed':'Mark as complete'}</button></div><article className="journal-card"><div className="reading-meta"><span>CORE READING</span><b>{j.coreReading}</b></div><div className="reading-meta"><span>SUPPORTING</span><b>{j.supportingReading}</b></div><div className="reading-meta"><span>STUDY METHOD</span><b>{j.studyMethod}</b></div><div className="scripture-box"><div className="box-title">TODAY'S SCRIPTURE — WEB</div>{blocks.map(b=><div className="reading-block" key={b.book+b.chapter}><h4>{b.book} {b.chapter}:{b.start}–{b.end}</h4>{b.verses.map(v=><p key={v.v}><sup>{v.v}</sup>{v.text}</p>)}</div>)}</div><Reflection label="WHAT DID I LEARN?" value={notes.learn} save={v=>save('learn',v)}/><div className="reflection-grid"><Reflection label="WHAT STOOD OUT?" value={notes.stood} save={v=>save('stood',v)}/><Reflection label="HOW DOES THIS APPLY?" value={notes.apply} save={v=>save('apply',v)}/></div><div className="reflection-grid"><Reflection label="KEY POINT" value={notes.key} save={v=>save('key',v)}/><Reflection label="MY PRAYER" value={notes.prayer} save={v=>save('prayer',v)}/></div></article></section>}
+const Reflection=({label,value,save})=><div className="reflection"><label>{label}</label><textarea value={value||''} onChange={e=>save(e.target.value)} placeholder="Write here…"/></div>;
+function Bible({book,chapter,setBook,setChapter,data,verses,books,open,saved,setSaved,marks,setMarks,notes,saveNote,setScreen,loading}){return <section className="content-page"><div className="section-head"><div><p className="eyebrow">FULL BIBLE LIBRARY · WEB</p><h2>{book} {chapter}</h2><p className="muted">HOME → BIBLE → {book} → CHAPTER {chapter}</p></div><button className="secondary" onClick={()=>setScreen('home')}>⌂ Home</button></div><div className="bible-layout"><aside className="book-list"><h4>66 BOOKS</h4>{books.map(b=><button className={b[0]===book?'book active':'book'} key={b[0]} onClick={()=>{setBook(b[0]);setChapter(1)}}>{b[0]}</button>)}</aside><article className="bible-reader"><div className="chapter-nav"><select value={chapter} onChange={e=>setChapter(+e.target.value)}>{Array.from({length:books.find(b=>b[0]===book)[1]},(_,i)=><option key={i+1} value={i+1}>Chapter {i+1}</option>)}</select></div><h3>{book} {chapter}</h3>{loading&&!data?<p className="muted">Loading Scripture…</p>:verses.map(v=>{let r=book+' '+chapter+':'+v.v;return <div className={'verse '+(marks[r]||'')} key={v.v}><button className="verse-no" onClick={()=>setSaved(x=>x.includes(r)?x.filter(y=>y!==r):[...x,r])}>{v.v}</button><span>{v.text}</span><div className="verse-tools"><button onClick={()=>setMarks(x=>({...x,[r]:x[r]==='yellow'?'': 'yellow'}))}>Highlight</button><button onClick={()=>setMarks(x=>({...x,[r]:x[r]==='lavender'?'':'lavender'}))}>Lavender</button><button onClick={()=>setSaved(x=>x.includes(r)?x.filter(y=>y!==r):[...x,r])}>{saved.includes(r)?'★ Saved':'☆ Save'}</button></div></div>})}<div className="reader-actions"><button onClick={()=>setScreen('journal')}>✎ Journal about this chapter</button><button onClick={()=>setScreen('home')}>⌂ Home</button></div><div className="chapter-journal"><p className="eyebrow">JOURNAL ABOUT THIS CHAPTER</p>{['learn','spoke','apply','prayer'].map((f,i)=><Reflection key={f} label={['WHAT DID I LEARN?','WHAT SPOKE TO ME?','QUESTIONS / APPLICATION','PRAYER'][i]} value={notes[f]} save={v=>saveNote(f,v)}/>)}</div></article></div></section>}
+function Topics({topic,results,show,open,setTopic,loading}){return <section className="content-page"><div className="section-head"><div><p className="eyebrow">STUDY BY SUBJECT</p><h2>Topics</h2></div></div>{!topic?<div className="topic-grid">{TOPICS.map(t=><button key={t} onClick={()=>show(t)}>{t}<span>→</span></button>)}</div>:<article className="journal-card topic-page"><button className="back" onClick={()=>setTopic(null)}>← All topics</button><p className="eyebrow">TOPIC</p><h3>{topic}</h3>{loading?<p className="muted">Searching Scripture…</p>:<div className="topic-results">{results.map((r,i)=><button key={i} onClick={()=>open(r.book,r.chapter)}><b>{r.ref}</b><span>{r.text}</span></button>)}</div>}</article>}</section>}
+function Journal({prayers,setPrayers}){const[f,setF]=useState({title:'',prayer:'',category:'Personal',status:'Active'});const add=()=>{if(!f.prayer.trim())return;setPrayers(x=>[{...f,date:new Date().toISOString().slice(0,10),id:Date.now()},...x]);setF({title:'',prayer:'',category:'Personal',status:'Active'})};return <section className="content-page"><div className="section-head"><div><p className="eyebrow">YOUR WRITING SPACE</p><h2>Prayer Journal</h2></div></div><div className="journal-layout"><article className="journal-card"><p className="eyebrow">NEW PRAYER</p><input value={f.title} onChange={e=>setF({...f,title:e.target.value})} placeholder="Prayer title"/><textarea value={f.prayer} onChange={e=>setF({...f,prayer:e.target.value})} placeholder="Write your prayer…"/><div className="form-row"><select value={f.category} onChange={e=>setF({...f,category:e.target.value})}>{['Personal','Family','Health','Career','Ministry','Finances','Relationships','Spiritual Growth','Other'].map(x=><option key={x}>{x}</option>)}</select><select value={f.status} onChange={e=>setF({...f,status:e.target.value})}><option>Active</option><option>Answered</option></select><button className="primary" onClick={add}>Save prayer</button></div></article><aside className="side-card"><p className="eyebrow">SAVED PRAYERS</p>{prayers.map(p=><div className="saved-item" key={p.id}><b>{p.title||'Prayer'}</b><small>{p.date} · {p.category} · {p.status}</small><p>{p.prayer}</p></div>)}</aside></div></section>}
+function Search({q,setQ,search,results,open,loading}){return <section className="content-page"><div className="section-head"><div><p className="eyebrow">SEARCH SCRIPTURE</p><h2>Find a verse</h2></div></div><div className="search-box"><input autoFocus value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&search()} placeholder="Word, phrase, or John 3:16"/><button className="primary" onClick={search}>Search</button></div>{loading&&<p className="muted">Searching the Bible…</p>}<div className="results">{results.map((r,i)=><button key={i} onClick={()=>open(r.book,r.chapter)}><b>{r.ref}</b><span>{r.text}</span></button>)}</div></section>}
+createRoot(document.getElementById('root')).render(<App/>);
