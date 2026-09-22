@@ -1,0 +1,10 @@
+{
+  "name": "Bible Journal",
+  "short_name": "Bible Journal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f0e3",
+  "theme_color": "#173f36",
+  "description": "A Bible reading, study and journaling app.",
+  "icons": []
+}
