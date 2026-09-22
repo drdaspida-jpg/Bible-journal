@@ -1,32 +1,22 @@
 # Bible Journal
 
-A premium Bible reading, study and journaling application.
+A responsive Bible reading, study and journaling app for web, Android and iOS/PWA use.
 
-## Product direction
+## Included
+- World English Bible (WEB), 66-book Protestant Bible, stored as structured book/chapter/verse JSON.
+- Supplied 365-day reading plan with all 365 days, titles, core readings, supporting readings and study methods.
+- Daily Scripture reading with journal prompts and explicit completion tracking.
+- Full Bible library with book/chapter navigation, verse saving, highlights and chapter journaling.
+- Topic study, global Scripture search, prayer journal and local progress persistence.
+- Responsive mobile/tablet/desktop design using the Modern Sacred Editorial palette.
+- GitHub Pages deployment workflow and offline-first service worker.
 
-- World English Bible (WEB)
-- 66-book Protestant Bible
-- 365-day Bible journey
-- Daily Scripture + reflection
-- Bible chapter journal
-- Topics
-- Search
-- Bookmarks and highlights
-- Prayer journal
-- Progress tracking
-- Offline-first/PWA architecture
-- Responsive mobile/tablet/desktop UI
-
-## Current scaffold
-
-The repository currently contains the responsive application shell and core navigation. The next content-import stage will replace the demonstration Scripture data with the complete structured WEB Bible and the supplied 365-day reading plan.
-
-## Development
+## Run locally
 
 ```bash
 npm install
 npm run dev
-```
+``
 
 Build:
 
@@ -34,6 +24,8 @@ Build:
 npm run build
 ```
 
-## Content
+## Source note
+The World English Bible used by this project is the public-domain 2020 stable text edition. The app keeps the Bible data inside the repository rather than depending on a third-party Bible API.
 
-The World English Bible is public domain. The production build should use the project's supplied WEB source rather than an external Bible API so the reader can operate offline.
+## GitHub Pages
+The Vite base path is configured for this repository: `/Bible-journal/`. The workflow in `.github/workflows/deploy.yml` builds and deploys the app to GitHub Pages when enabled for the repository.
